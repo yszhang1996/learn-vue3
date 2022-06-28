@@ -22,7 +22,7 @@ const routes: Array<RouteRecordRaw> = [
             },
             {
                 path: 'user',
-                component: () => import('../views/User.vue'),
+                component: () => import('../views/User/User.vue'),
                 meta: {
                     title: '用户列表',
                     isShow: true,

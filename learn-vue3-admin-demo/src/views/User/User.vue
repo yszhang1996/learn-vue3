@@ -2,11 +2,17 @@
     <div>
         <div class="search-warpper">
             <el-form :inline="true" :model="params" class="demo-form-inline">
-                <el-form-item label="商品名">
-                    <el-input v-model="params.title" placeholder="请输入商品名" />
+                <el-form-item label="用户名">
+                    <el-input v-model="params.username" placeholder="请输入用户名" />
                 </el-form-item>
-                <el-form-item label="详情">
-                    <el-input v-model="params.introduce" placeholder="请输入详情" />
+                <el-form-item label="邮箱">
+                    <el-input v-model="params.email" placeholder="请输入邮箱" />
+                </el-form-item>
+                <el-form-item label="角色">
+                    <el-select v-model="params.type" placeholder="请选择角色" style="width:100%">
+                        <el-option label="管理员" value="管理员" />
+                        <el-option label="普通用户" value="普通用户" />
+                    </el-select>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="handleQuery">查询</el-button>
@@ -20,9 +26,10 @@
         <div class="table-warpper" v-loading="loading">
             <el-table :data="tableData" border style="width: 100%">
                 <el-table-column prop="id" label="ID" width="180" />
-                <el-table-column prop="type" label="类型" />
-                <el-table-column prop="title" label="标题" />
-                <el-table-column prop="introduce" label="详情" />
+                <el-table-column prop="username" label="用户名" />
+                <el-table-column prop="email" label="邮箱" />
+                <el-table-column prop="type" label="角色" />
+                <el-table-column prop="remark" label="备注" />
                 <el-table-column fixed="right" label="操作" width="120">
                     <template #default="scope">
                         <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -41,8 +48,8 @@
                     layout="sizes, prev, pager, next, jumper" :total="total" />
             </div>
         </div>
-        <AddGoods :showAddGoodsFlag="showAddGoodsFlag" :title="addGoodsTitle" @handleCancel="handleCancel"
-            @submit="submit" :formData="formData" />
+        <AddUser :showAddFlag="showAddFlag" :title="addTitle" @handleCancel="handleCancel" @submit="submit"
+            :formData="formData" />
     </div>
 </template>
 
@@ -50,45 +57,49 @@
 import { ElMessage } from "element-plus";
 import { reactive, ref, watch, toRaw } from "vue";
 import { useRouter } from "vue-router";
-import { useDebounceFn } from '@vueuse/core'
-import { getGoodsList, goodsDelete } from "../request/api";
-import AddGoods from "./goods/AddGoods.vue";
+import { getUserList, userDelete } from "../../request/api";
+import AddUser from "./AddUser.vue";
 
 const router = useRouter()
 
 let initParams = class {
     constructor() {
-        this.title = ''
-        this.introduce = ''
+        this.username = ''
+        this.email = ''
+        this.type = ''
     }
-    title
-    introduce
+    username
+    email
+    type
 }
 
 let initFormData = class {
     constructor() {
         this.type = ''
-        this.title = ''
-        this.introduce = ''
+        this.username = ''
+        this.email = ''
+        this.remark = ''
     }
     type
-    title
-    introduce
+    username
+    email
+    remark
 }
 
 type tableDataType = {
     id?: number,
     type: string,
-    title: string,
-    introduce: string,
+    username: string,
+    email: string,
+    remark: string,
 }
 // 设置加载中loading标识符，默认为true
 const loading = ref(true)
 // 是否显示新增/编辑弹窗的标识符
-const showAddGoodsFlag = ref(false)
+const showAddFlag = ref(false)
 
 // 新增/编辑弹窗的标题
-const addGoodsTitle = ref('新增商品')
+const addTitle = ref('新增用户')
 
 // 新增/编辑时的默认值
 const formData = ref<tableDataType>(new initFormData())
@@ -117,22 +128,19 @@ const handleQuery = () => {
 }
 
 // 查询函数，请求后端获取tableData数据
-const query =
-    useDebounceFn(  // 给查询增加防抖
-        () => {
-            loading.value = true
-            getGoodsList({
-                ...params.value,
-                pageNumber: pageNumber.value,
-                pageSize: pageSize.value,
-            }).then((res) => {
-                tableData.splice(0, tableData.length, ...res.data.content)
-                total.value = res.data.total
-            }).finally(() => {
-                loading.value = false
-            })
-        }
-        , 1000)
+const query = () => {
+    loading.value = true
+    getUserList({
+        ...params.value,
+        pageNumber: pageNumber.value,
+        pageSize: pageSize.value,
+    }).then((res) => {
+        tableData.splice(0, tableData.length, ...res.data.content)
+        total.value = res.data.total
+    }).finally(() => {
+        loading.value = false
+    })
+}
 
 // 手动点击重置按钮时执行该函数
 const handleReset = () => {
@@ -145,17 +153,15 @@ const handleReset = () => {
 // 手动点击编辑按钮
 const handleEdit = (row: tableDataType) => {
     console.log('handleEdit');
-    console.log(row);
-
-    addGoodsTitle.value = `编辑商品`
+    addTitle.value = `编辑用户`
     formData.value = row
-    showAddGoodsFlag.value = true
+    showAddFlag.value = true
 }
 
 // 手动点击删除按钮
 const handleDelete = (id: number) => {
     console.log('handleEdit' + id);
-    goodsDelete({
+    userDelete({
         id
     }).then(res => {
         ElMessage.success(res.msg)
@@ -165,19 +171,19 @@ const handleDelete = (id: number) => {
 
 // 手动点击新增
 const handleAdd = () => {
-    addGoodsTitle.value = `新增商品`
+    addTitle.value = `新增用户`
     formData.value = new initFormData()
-    showAddGoodsFlag.value = true
+    showAddFlag.value = true
 }
 
 // 取消新增/编辑
 const handleCancel = () => {
-    showAddGoodsFlag.value = false
+    showAddFlag.value = false
 }
 
 // 接收到子组件传来的自定义事件，操作成功，此时应关闭弹窗，刷新列表
 const submit = () => {
-    showAddGoodsFlag.value = false
+    showAddFlag.value = false
     handleQuery()
 }
 
