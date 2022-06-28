@@ -27,6 +27,14 @@ const routes: Array<RouteRecordRaw> = [
                     title: '用户列表',
                     isShow: true,
                 },
+            },
+            {
+                path: 'user1',
+                component: () => import('../views/User1/User.vue'),
+                meta: {
+                    title: '用户列表1',
+                    isShow: true,
+                },
             }
         ]
     },

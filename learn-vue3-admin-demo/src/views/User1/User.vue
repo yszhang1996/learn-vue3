@@ -16,7 +16,7 @@
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="handleQuery">查询</el-button>
-                    <el-button @click="handleReset">重置</el-button>
+                    <el-button @click="handleReset(new initParams())">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -58,6 +58,7 @@ import { ElMessage } from "element-plus";
 import { reactive, ref, watch, toRaw } from "vue";
 import { useRouter } from "vue-router";
 import { getUserList, userDelete } from "../../request/api";
+import { useGetList,useDeleteList } from "../../hooks/base"
 import AddUser from "./AddUser.vue";
 
 const router = useRouter()
@@ -73,8 +74,18 @@ let initParams = class {
     type
 }
 
-console.log(initParams);
+type tableDataType = {
+    id?: number,
+    type: string,
+    username: string,
+    email: string,
+    remark: string,
+}
 
+// 使用组合式函数封装好的查询
+const { params, tableData, pageNumber, pageSize, total, loading, handleQuery, handleReset } = useGetList(new initParams(), reactive<tableDataType[]>([]), getUserList)
+// 使用组合式函数封装好的删除
+const { handleDelete } = useDeleteList(userDelete,handleQuery)
 
 let initFormData = class {
     constructor() {
@@ -89,17 +100,6 @@ let initFormData = class {
     remark
 }
 
-type tableDataType = {
-    id?: number,
-    type: string,
-    username: string,
-    email: string,
-    remark: string,
-}
-
-// 设置加载中loading标识符，默认为true
-const loading = ref(true)
-// 是否显示新增/编辑弹窗的标识符
 const showAddFlag = ref(false)
 
 // 新增/编辑弹窗的标题
@@ -108,69 +108,12 @@ const addTitle = ref('新增用户')
 // 新增/编辑时的默认值
 const formData = ref<tableDataType>(new initFormData())
 
-// 创建分页时记录当前页码数据
-const pageNumber = ref(1)
-
-// 创建分页时记录当前每页显示多少条数据
-const pageSize = ref(15)
-
-// 创建查询列表的双向绑定数据
-const params = ref(new initParams())
-
-// 创建表格数据
-const tableData = reactive<tableDataType[]>([])
-
-// const dataSouce = reactive<dataSouce[]>([])
-
-// 记录当前列表数据总条数
-const total = ref(0)
-
-// 点击搜索按钮时执行的函数
-const handleQuery = () => {
-    pageNumber.value = 1 // 手动点击查询，要重置页码为1
-    query()
-}
-
-// 查询函数，请求后端获取tableData数据
-const query = () => {
-    loading.value = true
-    getUserList({
-        ...params.value,
-        pageNumber: pageNumber.value,
-        pageSize: pageSize.value,
-    }).then((res) => {
-        tableData.splice(0, tableData.length, ...res.data.content)
-        total.value = res.data.total
-    }).finally(() => {
-        loading.value = false
-    })
-}
-
-// 手动点击重置按钮时执行该函数
-const handleReset = () => {
-    params.value = new initParams()
-    pageNumber.value = 1
-    pageSize.value = 10
-    query()
-}
-
 // 手动点击编辑按钮
 const handleEdit = (row: tableDataType) => {
     console.log('handleEdit');
     addTitle.value = `编辑用户`
     formData.value = row
     showAddFlag.value = true
-}
-
-// 手动点击删除按钮
-const handleDelete = (id: number) => {
-    console.log('handleEdit' + id);
-    userDelete({
-        id
-    }).then(res => {
-        ElMessage.success(res.msg)
-        query()
-    })
 }
 
 // 手动点击新增
@@ -190,18 +133,6 @@ const submit = () => {
     showAddFlag.value = false
     handleQuery()
 }
-
-//监听
-watch(
-    [pageNumber, pageSize],
-    () => {
-        // 监听到pageNumber或者pageSize变化，重新获取数据
-        query()
-    }
-)
-
-// 初始化页面时调用查询，相当于vue2的created
-query()
 
 </script>
 
