@@ -28,7 +28,7 @@ type tableDataType = {
 }
 
 // 使用组合式函数封装好的查询
-const { tableData, pageNum, pageSize, total, loading, handleQuery, handleReset } = useGetList({}, reactive<tableDataType[]>([]), violationRecords)
+const { tableData, pageNum, pageSize, total, loading } = useGetList({}, reactive<tableDataType[]>([]), violationRecords)
 
 </script>
 
