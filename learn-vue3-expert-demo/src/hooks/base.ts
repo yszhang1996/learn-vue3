@@ -35,6 +35,7 @@ export function useGetList<T>(params: any, tableData: T[], getList: (params: any
 
     // 手动点击重置按钮时执行该函数
     const handleReset = (resetData: any, callback?: (() => void)) => {
+        if(!resetData) return;
         useParams.value = resetData
         pageNum.value = 1
         pageSize.value = 10
