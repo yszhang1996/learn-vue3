@@ -21,7 +21,7 @@
             </el-form>
         </div>
         <div class="options-warpper">
-            <el-button type="primary" @click="handleAdd">新增</el-button>
+            <el-button type="primary" @click="handleAdd(new initFormData())">新增</el-button>
         </div>
         <div class="table-warpper" v-loading="loading">
             <el-table :data="tableData" border style="width: 100%">
@@ -48,7 +48,7 @@
                     layout="sizes, prev, pager, next, jumper" :total="total" />
             </div>
         </div>
-        <AddUser :showAddFlag="showAddFlag" :title="addTitle" @handleCancel="handleCancel" @submit="submit"
+        <AddUser :showAddFlag="showAddFlag" :title="addTitle" @handleCancel="handleCancel" @submit="submit(handleQuery)"
             :formData="formData" />
     </div>
 </template>
@@ -56,12 +56,9 @@
 <script lang="ts" setup >
 import { ElMessage } from "element-plus";
 import { reactive, ref, watch, toRaw } from "vue";
-import { useRouter } from "vue-router";
-import { getUserList, userDelete } from "../../request/api";
-import { useGetList,useDeleteList } from "../../hooks/base"
+import { getUserList, userDelete, userEdit } from "../../request/api";
+import { useGetList, useDeleteList, useAddAndEditList } from "../../hooks/base"
 import AddUser from "./AddUser.vue";
-
-const router = useRouter()
 
 let initParams = class {
     constructor() {
@@ -73,19 +70,6 @@ let initParams = class {
     email
     type
 }
-
-type tableDataType = {
-    id?: number,
-    type: string,
-    username: string,
-    email: string,
-    remark: string,
-}
-
-// 使用组合式函数封装好的查询
-const { params, tableData, pageNumber, pageSize, total, loading, handleQuery, handleReset } = useGetList(new initParams(), reactive<tableDataType[]>([]), getUserList)
-// 使用组合式函数封装好的删除
-const { handleDelete } = useDeleteList(userDelete,handleQuery)
 
 let initFormData = class {
     constructor() {
@@ -100,39 +84,20 @@ let initFormData = class {
     remark
 }
 
-const showAddFlag = ref(false)
-
-// 新增/编辑弹窗的标题
-const addTitle = ref('新增用户')
-
-// 新增/编辑时的默认值
-const formData = ref<tableDataType>(new initFormData())
-
-// 手动点击编辑按钮
-const handleEdit = (row: tableDataType) => {
-    console.log('handleEdit');
-    addTitle.value = `编辑用户`
-    formData.value = row
-    showAddFlag.value = true
+type tableDataType = {
+    id?: number,
+    type: string,
+    username: string,
+    email: string,
+    remark: string,
 }
 
-// 手动点击新增
-const handleAdd = () => {
-    addTitle.value = `新增用户`
-    formData.value = new initFormData()
-    showAddFlag.value = true
-}
-
-// 取消新增/编辑
-const handleCancel = () => {
-    showAddFlag.value = false
-}
-
-// 接收到子组件传来的自定义事件，操作成功，此时应关闭弹窗，刷新列表
-const submit = () => {
-    showAddFlag.value = false
-    handleQuery()
-}
+// 使用组合式函数封装好的查询
+const { params, tableData, pageNumber, pageSize, total, loading, handleQuery, handleReset } = useGetList(new initParams(), reactive<tableDataType[]>([]), getUserList)
+// 使用组合式函数封装好的删除
+const { handleDelete } = useDeleteList(userDelete, handleQuery)
+// 使用组合式函数封装好的新增
+const { showAddFlag, addTitle, formData, handleAdd, handleEdit, handleCancel, submit } = useAddAndEditList(new initFormData(),userEdit, handleQuery)
 
 </script>
 

@@ -3,6 +3,7 @@
  */
 import { ref, watch } from "vue";
 import { ElMessage } from "element-plus"
+import { useDebounceFn } from '@vueuse/core'
 
 interface ResultData {
     code: number;
@@ -43,8 +44,8 @@ export function useGetList(params: any, tableData: any[], getList: (params: any)
     }
 
 
-    // 查询函数，请求后端获取tableData数据
-    const query = () => {
+    // 查询函数，请求后端获取tableData数据，同时使用防抖
+    const query = useDebounceFn(() => {
         loading.value = true
         getList({
             ...useParams.value,
@@ -56,7 +57,7 @@ export function useGetList(params: any, tableData: any[], getList: (params: any)
         }).finally(() => {
             loading.value = false
         })
-    }
+    }, 300)
 
     //监听
     watch(
@@ -84,7 +85,6 @@ export function useGetList(params: any, tableData: any[], getList: (params: any)
 export function useDeleteList(DeleteList: (params: any) => Promise<ResultData>, handleQuery: () => void) {
     // 手动点击删除按钮
     const handleDelete = (id: number) => {
-        console.log('handleEdit' + id);
         DeleteList({
             id
         }).then(res => {
@@ -94,5 +94,40 @@ export function useDeleteList(DeleteList: (params: any) => Promise<ResultData>, 
     }
     return {
         handleDelete
+    }
+}
+
+export function useAddAndEditList(initFormData: any, AddList: (params: any) => Promise<ResultData>, handleQuery: () => void) {
+    const showAddFlag = ref(false)
+
+    // 新增/编辑弹窗的标题
+    const addTitle = ref('新增用户')
+
+    const formData = ref(initFormData)
+
+    console.log(formData);
+
+
+    // 手动点击新增
+    const handleAdd = (data: any) => {
+        addTitle.value = `新增用户`
+        formData.value = data
+        showAddFlag.value = true
+    }
+    const handleEdit = (data: any) => {
+        addTitle.value = `编辑用户`
+        formData.value = data
+        showAddFlag.value = true
+    }
+    const handleCancel = () => {
+        showAddFlag.value = false
+    }
+    const submit = (callback: () => void) => {
+        showAddFlag.value = false
+        callback()
+    }
+    return {
+        showAddFlag, addTitle, formData,
+        handleAdd, handleEdit, handleCancel, submit
     }
 }

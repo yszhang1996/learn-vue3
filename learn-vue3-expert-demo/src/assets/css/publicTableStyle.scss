@@ -1,0 +1,31 @@
+.search-wrapper {
+    border: 1px solid #e6eaee;
+    margin: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.options-warpper {
+    margin: 20px;
+}
+
+.table-warpper {
+    margin: 20px;
+    box-sizing: border-box;
+}
+
+.table-pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.table-warpper {
+    .normal-table-header {
+        background-color: #f5f7fa!important;
+    }
+}
+
+.options-warpper {
+    margin: 20px;
+}
