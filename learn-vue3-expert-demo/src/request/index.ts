@@ -9,8 +9,9 @@ interface Result {
 }
 
 // 请求响应参数，包含data
+// interface ResultData<T> extends Result {
+//     data: T;
 interface ResultData extends Result {
-    // data: T;
     data: any;  // 指定data为any类型，避免.then时报错，又不想每次.then是都写.then((res):any)，所以在此直接指定
 }
 

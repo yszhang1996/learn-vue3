@@ -54,6 +54,18 @@ namespace MyTrain {
         scheduleId: number,
         videoSchedule: number,
     }
+    export interface CourseDetailData {
+        scheduleId?: number;
+        fileUrl?: string;
+        trueFileUrl?: string;
+        fileName?: string;
+        fileSchedule?: number;
+        fileScheduleName?: string;
+        fileReadTime?: number;
+        videoSchedule?: number;
+        fileType?: number;
+        videoAllTime?: any;
+    }
 }
 
 namespace MyExam {
@@ -99,8 +111,15 @@ export const getProjectInfoList = (params: ProjectInfo.ListParams) => axios.post
 export const getMyTrainList = (params: MyTrain.ListParams) => axios.post('/v1/expertuser/expertTrainList', params)
 // 获取培训详情
 export const joinTrainDetails = (params: MyTrain.DetailParams) => axios.get('/v1/expertuser/joinTrainDetails', params)
+
+// 该处注释的代码相较于别的API增加了axios.post<MyTrain.CourseDetailData[]>，即，定义了返回数据的格式，这里自己写项目嫌麻烦就没用，
+// 如果要约束返回数据的格式，需要在方法后指明反参格式，同时在/request/index.ts中将代码12-13行注释解开，注释掉14-15行
+// 在123-134行封装好的四个请求get、post、put、delete，修改其格式约束，参考111-122行
+// export const courseDetails = (params: MyTrain.CourseDetailParams) => axios.post<MyTrain.CourseDetailData[]>(`/v1/expertuser/courseDetails?trainId=${params.trainId}&courseId=${params.courseId}`)
+
 // 获取培训详情
 export const courseDetails = (params: MyTrain.CourseDetailParams) => axios.post(`/v1/expertuser/courseDetails?trainId=${params.trainId}&courseId=${params.courseId}`)
+
 // 我的培训-检查是否可进入培训
 export const addAllPlayTime = (params: MyTrain.addAllPlayTime) => axios.post(`v1/expertuser/addAllPlayTime?scheduleId=${params.scheduleId}&videoAllPlayTime=${params.videoAllPlayTime}`)
 // 我的培训-培训管理-课程详情-修改完成状态
